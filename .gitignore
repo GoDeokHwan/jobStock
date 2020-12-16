@@ -1,2 +1,5 @@
 conf/config.ini
 jobstock/agent/__pycache_/
+jobstock/agent/__pycache__/
+tests/__pycache__/
+.vscode/
