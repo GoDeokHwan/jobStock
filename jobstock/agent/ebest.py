@@ -78,7 +78,7 @@ class EBest:
         waiting_cnt = 0
         while xa_query.tr_run_state == 0:
             waiting_cnt += 1
-            if waiting_cnt % 100000 == 0
+            if waiting_cnt % 100000 == 0:
                 print("Waiting.....", self.xa_session_client.GetLastError())
             pythoncom.PumpWaitingMessages()
             
@@ -90,7 +90,7 @@ class EBest:
             item = {}
             for field in out_fields:
                 value = xa_query.GetFieldData(out_block_name, field, i)
-                itemp[field] = value
+                item[field] = value
             result.append(item)
             
         # 제약 시간 체크
@@ -109,7 +109,20 @@ class EBest:
                             item.pop(field)
     
         return result
-            
+    
+    def get_code_list(self, market=None):   # 주식종목조회
+        if market != "ALL" and market != "KOSPI" and market != "KOSDAQ":
+            raise Exception("Need to market param(ALL , KOSPI, KOSDAQ)")
+        
+        market_code = {"ALL": "0", "KOSPI": "1", "KOSDAQ": "2"}
+        in_params = {"gubun": market_code[market]}
+        out_params = ['hname', 'shcode', 'expcode', 'etfgubun', 'memedan', 'gubun', 'spac_gubun']
+        result = self._execute_query("t8436",
+                                     "t8436InBlock",
+                                     "t8436OutBlock",
+                                     *out_params,
+                                     **in_params)
+        return result
         
        
 class XAQuery: # TR 호출 클래스
@@ -123,7 +136,6 @@ class XAQuery: # TR 호출 클래스
     def OnReceiveMessage (self, error, code, message):
         print("OnReceiveMessage", error, code, message)
 
-   
 class Field:
     t1101 = {
         "t1101OutBlock":{
