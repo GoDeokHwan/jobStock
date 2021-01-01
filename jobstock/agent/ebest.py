@@ -200,6 +200,127 @@ class EBest:
         for item in result:
             item["code"] = code
         return result 
+    
+    def get_account_info(self): # 계좌금액 조회
+        in_params = {
+            "RecCnt": 1,
+            "AcntNo": self.account,
+            "Pwd": self.passwd
+        }
+        out_params = ["MnyOrdAbleAmt", "BalEvalAmt", "DpsastTotamt", "InvstOrgAmt", "InvstPlAmt", "Dps"]
+        
+        result = self._execute_query("CSPAQ12200",
+                                     "CSPAQ12200InBlock1",
+                                     "CSPAQ12200OutBlock2",
+                                     *out_params,
+                                     **in_params)
+        return result
+    
+    def order_stock(self, code, qty, price, bns_type, order_type): # 현물 정상 주문
+        in_params = {
+            "AcntNo": self.account,
+            "InptPwd": self.passwd,
+            "IsuNo": code,
+            "OrdQty": qty,
+            "OrdPrc": price,
+            "BnsTpCode": bns_type,
+            "OrdprcPtnCode": order_type
+        }
+        out_params = ["OrdNo", "OrdTime", "OrdMktCode", "OrdPtnCode", "ShtnIsuNo", "MgempNo", "OrdAmt", "SpotOrdQty", "IsuNm"]
+        
+        result = self._execute_query("CSPAT00600",
+                                     "CSPAT00600InBlock1",
+                                     "CSPAT00600OutBlock2",
+                                     *out_params,
+                                     **in_params)
+        
+        return result
+    
+    def order_cancel(self, order_no, code, qty): # 현물 취소
+        in_params = {
+            "OrgOrdNo": order_no,
+            "AcntNo": self.account,
+            "InptPwd": self.passwd,
+            "IsuNo": code,
+            "OrdQty": qty
+        }
+        
+        out_params = ["OrdNo", "PrntOrdNo", "OrdTime", "OrdPtnCode", "IsuNm"]
+        
+        result = self._execute_query("CSPAT00800",
+                                     "CSPAT00800InBlock1",
+                                     "CSPAT00800OutBlock2",
+                                     *out_params,
+                                     **in_params)
+        
+        return result
+          
+    def order_check(self, code=None, order_no=None): # 주식 체결/미체결 조회
+        in_params = {
+            "accno": self.account,
+            "passwd": self.passwd,
+            "expcode": code,
+            "chegb": "0",
+            "medosu": "0",
+            "sortgb": "1",
+            "cts_ordno": " "
+        }
+        out_params = ["ordno", "expcode", "medosu", "qty", "price", "cheqty", "cheprice", "ordrem", "cfmqty", "status", "orgordno", "ordgb", "ordermtd", "sysprocseq", "hogagb", "price1", "orggb", "singb", "loandt"]
+        
+        result_list = self._execute_query("t0425",
+                                     "t0425InBlock",
+                                     "t0425OutBlock1",
+                                     *out_params,
+                                     **in_params)
+        result = {}
+        if order_no is not None:
+            for item in result_list:
+                if item["주문번호"] == order_no:
+                    result = item
+            return result
+        else:
+            return result_list
+    
+    def get_current_call_price_by_code(self, code=None): # 주식 현재 호가 조회
+        tr_code = "t1101"
+        in_params =  {"shcode": code}
+        out_params = [ "hname", "price", "sign", "change", "diff", "volume", "jnilclose",
+                      "offerho1", "bidho1", "offerrem1", "bidrem1",
+                      "offerho2", "bidho2", "offerrem2", "bidrem2",
+                      "offerho3", "bidho3", "offerrem3", "bidrem3",
+                      "offerho4", "bidho4", "offerrem4", "bidrem4",
+                      "offerho5", "bidho5", "offerrem5", "bidrem5",
+                      "offerho6", "bidho6", "offerrem6", "bidrem6",
+                      "offerho7", "bidho7", "offerrem7", "bidrem7",
+                      "offerho8", "bidho8", "offerrem8", "bidrem8",
+                      "offerho9", "bidho9", "offerrem9", "bidrem9",
+                      "offerho10", "bidho10", "offerrem10", "bidrem10",
+                      "preoffercha10", "prebidcha10", "offer", "bid",
+                      "preoffercha", "prebidcha", "hotime", " yeprice", " yevolume",
+                      "yesign", " yechange", " yediff", "tmoffer", "tmbid", "ho_status",
+                      "shcode", "uplmtprice", "dnlmtprice", "open", "high", "low"
+                      ]
+        
+        result = self._execute_query("t1101",
+                                     "t1101InBlock",
+                                     "t1101OutBlock",
+                                     *out_params,
+                                     **in_params
+                                     )
+        
+        for item in result:
+            item["code"] = code
+        
+        return result
+    
+    def get_tick_size(self, price): # 호가 단위 조회
+        if price < 1000: return 1
+        elif price < 5000: return 5
+        elif price < 10000: return 10      
+        elif price < 50000: return 50
+        elif price < 100000: return 100
+        elif price < 500000: return 500
+        else: return 1000
         
        
 class XAQuery: # TR 호출 클래스
