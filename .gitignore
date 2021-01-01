@@ -2,3 +2,4 @@ conf/config.ini
 jobstock/agent/__pycache__/
 tests/__pycache__/
 .vscode/
+jobstock/db_handler/__pycache__/
