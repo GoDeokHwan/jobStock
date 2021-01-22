@@ -26,6 +26,7 @@ def collect_stock_info():
     mongodb = MongoDBHandler()
     ebest.login()
     code_list = mongodb.find_items({}, STOCKLAB_DB, "code_info")
+    print(code_list)
     target_code = set([itme["단축코드"] for item in code_list])
     today = datetime.today().strftime("%Y%m%d")
     print(today)

@@ -54,13 +54,15 @@ def check_buy_order(code):  # 매수주문 완료 체크
         order_cnt = order["매수주문"]["실물주문수량"]
         check_result = ebest_demo.order_check(order_no)
         print("check buy order result", check_result)
-        result_cnt = check_result["체결수량"]
-        if order_cnt == result_cnt:
-            mongo.update_item({"매수주문.주문번호": order_no},
-                              {"$set": {"매수완료": check_result,
-                                        "status": "buy_completed"}},
-                              "stocklab_demo", "order")
-        print("매수완료", check_result)
+
+        if (len(check_result) > 0):
+            result_cnt = check_result["체결수량"]
+            if order_cnt == result_cnt:
+                mongo.update_item({"매수주문.주문번호": order_no},
+                                  {"$set": {"매수완료": check_result,
+                                            "status": "buy_completed"}},
+                                  "stocklab_demo", "order")
+            print("매수완료", check_result)
     return len(order_list)
 
 
@@ -79,14 +81,15 @@ def check_sell_order(code):  # 매도주문 완료 체크
         order_cnt = order["매도주문"]["실물주문수량"]
         check_result = ebest_demo.order_check(order_no)
         print("check sell order result", check_result)
-        result_cnt = check_result["체결수량"]
-        if order_cnt == result_cnt:
-            mongo.update_item({"매도주문.주문번호": order_no},
-                              {"$set": {"매도완료": check_result,
-                                        "status": "sell_completed"}},
-                              "stocklab_demo", "order")
+        if len(check_result) > 0:
+            result_cnt = check_result["체결수량"]
+            if order_cnt == result_cnt:
+                mongo.update_item({"매도주문.주문번호": order_no},
+                                  {"$set": {"매도완료": check_result,
+                                            "status": "sell_completed"}},
+                                  "stocklab_demo", "order")
 
-        print("매도완료", check_result)
+            print("매도완료", check_result)
 
     return len(sell_order_list)
 
